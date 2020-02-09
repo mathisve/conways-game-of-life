@@ -31,19 +31,6 @@ func print_world(a [][]int) {
 	}
 }
 
-func print_surrounding_variables(surrounding_a [][]int) {
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			if surrounding_a[i][j] == 0 {
-				fmt.Print("·")
-			} else {
-				fmt.Print("✖")
-			}
-			fmt.Print(" ")
-		}
-		fmt.Print("\n")
-	}
-}
 func fill_world(a [][]int) [][]int {
 	rand.Seed(time.Now().UnixNano())
 	for i := 1; i < size; i++ {
