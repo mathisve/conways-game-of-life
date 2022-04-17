@@ -6,21 +6,26 @@ import (
 	"time"
 )
 
-var size int
-var fill_odds int
+type world struct {
+	Size  int
+	Board [][]int
+}
 
-func create_world() [][]int {
+func create_world(size int) world {
 	a := make([][]int, size+1)
 	for i := 0; i < size+1; i++ {
 		a[i] = make([]int, size+1)
 	}
-	return a
+	return world{
+		Size:  size,
+		Board: a,
+	}
 }
 
-func print_world(a [][]int) {
-	for i := 1; i < size; i++ {
-		for j := 1; j < size; j++ {
-			if a[i][j] == 0 {
+func (w *world) print_world() {
+	for i := 1; i < w.Size; i++ {
+		for j := 1; j < w.Size; j++ {
+			if w.Board[i][j] == 0 {
 				fmt.Print("·")
 			} else {
 				fmt.Print("✖")
@@ -31,22 +36,21 @@ func print_world(a [][]int) {
 	}
 }
 
-func fill_world(a [][]int) [][]int {
+func (w *world) fill_world() {
 	rand.Seed(time.Now().UnixNano())
-	for i := 1; i < size; i++ {
-		for j := 1; j < size; j++ {
-			if rand.Intn(100) < fill_odds {
-				a[i][j] = 1
+	for i := 1; i < w.Size; i++ {
+		for j := 1; j < w.Size; j++ {
+			if rand.Intn(100) < 10 {
+				w.Board[i][j] = 1
 			}
 		}
 	}
-	return a
 }
 
-func get_surrounding_variables(x int, y int, a [][]int) (surrounding_a [][]int) {
+func (w *world) get_surrounding_variables(x int, y int) (surrounding_a [][]int) {
 	surrounding_a = make([][]int, 3)
 	for i := 0; i < 3; i++ {
-		surrounding_a[i] = a[x-1+i][y-1 : y+2]
+		surrounding_a[i] = w.Board[x-1+i][y-1 : y+2]
 	}
 	return surrounding_a
 }
@@ -61,43 +65,48 @@ func sum_surrounding_variables(surrounding_a [][]int) (sum int) {
 	return sum
 }
 
-func update_world(a [][]int) [][]int {
-	updated_a := a
+func (w *world) update_world() {
+	updated_world := w
 
-	for i := 1; i < size; i++ {
-		for j := 1; j < size; j++ {
-			sum := sum_surrounding_variables(get_surrounding_variables(i, j, a))
+	for i := 1; i < updated_world.Size; i++ {
+		for j := 1; j < updated_world.Size; j++ {
+			sum := sum_surrounding_variables(updated_world.get_surrounding_variables(i, j))
 
-			if a[i][j] == 1 {
+			if updated_world.Board[i][j] == 1 {
 				if sum == 2 || sum == 3 {
-					updated_a[i][j] = 1
+					updated_world.Board[i][j] = 1
 				} else {
-					updated_a[i][j] = 0
+					updated_world.Board[i][j] = 0
 				}
 			} else {
 				if sum == 3 {
-					updated_a[i][j] = 1
+					updated_world.Board[i][j] = 1
 				}
 			}
 		}
 	}
-	return updated_a
+
+	w = &world{
+		Size:  updated_world.Size,
+		Board: updated_world.Board,
+	}
 }
 
 func main() {
-	size = 45
-	fill_odds = 10
+	size := 25
 	steps := 100
 
-	a := create_world()
-	a = fill_world(a)
+	a := create_world(size)
+	a.fill_world()
 
-	print_world(a)
+	a.print_world()
 	for i := 0; i < steps; i++ {
 		fmt.Println(i)
-		a = update_world(a)
+		a.update_world()
 		fmt.Println("\033[H\033[2J")
-		print_world(a)
-		time.Sleep(1 * time.Second)
+		a.print_world()
+		time.Sleep(200 * time.Millisecond)
 	}
+
+	a.print_world()
 }
